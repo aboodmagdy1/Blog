@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 //@desc admin  get login page
+//@route  GET /admin
 exports.getLoginPage = async (req, res) => {
   try {
     const locals = {
@@ -17,7 +18,8 @@ exports.getLoginPage = async (req, res) => {
   }
 };
 
-// //@desc admin post login checkLogin
+//@desc   Post admin login proccess
+//@route  POST /admin
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -52,6 +54,9 @@ exports.login = async (req, res) => {
     console.log(err);
   }
 };
+
+//@desc check if admin still logged in
+//@route  middleware before /admin/dashboard
 exports.autheMiddlware = async (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
@@ -66,24 +71,27 @@ exports.autheMiddlware = async (req, res, next) => {
     console.log(error);
   }
 };
+
+//@desc get admin dashboard
+//@route  GET /admin/dashboard
 exports.getAdminDashboard = async (req, res) => {
   try {
     const locals = {
-      title :'Admin Dashboard',
+      title: "Admin Dashboard",
       descreption: "Simple Blog app with Express mongodb ejs",
-    }
-    const posts =  await Post.find()
-    
-    res.render("admin/dashboard",{
+    };
+    const posts = await Post.find();
+
+    res.render("admin/dashboard", {
       locals,
-      posts
+      posts,
+      layout: adminLayout,
     });
-
-
   } catch (err) {}
-
 };
 
+//@desc make a new admin acount
+//@route  Post /admin
 exports.register = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -102,3 +110,84 @@ exports.register = async (req, res) => {
     console.log(err);
   }
 };
+
+//@desc get Add post page for admin
+//@route  GET /admin/add-post
+exports.getAddPostPage = async (req, res) => {
+  try {
+    const locals = {
+      title: "Add Post",
+      descreption: "simple blog created with NodeJs ,Express & MongoDb",
+    };
+
+    res.render("admin/add-post", { locals });
+  } catch (err) {}
+};
+
+//@desc   Add-post
+//@route  POST /admin/add-post
+exports.addPost = async (req, res) => {
+  try {
+    try {
+      const { title, body } = req.body;
+      const newPost = await Post.create({ title, body });
+      await newPost.save();
+      res.redirect("/dashboard");
+    } catch (err) {
+      console.log(err);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+
+//@desc   edit-post
+//@route  Get /admin/edit-post/:postId
+exports.getEditPostPage = async (req, res) => {
+  const locals = {
+    title: "Edit Post",
+    descreption: "simple blog created with NodeJs ,Express & MongoDb",
+  }
+  const post = await Post.findById(req.params.postId)
+  res.render(`admin/edit-post`,{locals,post,layout:adminLayout})
+};
+
+
+//@desc   edit-post
+//@route  PUT /admin/edit-post/:postId
+exports.editPost = async (req, res) => {
+  try {
+    const { title, body } = req.body;
+    const postId = req.params.postId;
+    const post = await Post.findByIdAndUpdate(postId, { title, body });
+    await post.save();
+    res.redirect(`/edit-post/${postId}`);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+
+
+//@desc   delete-post
+//@route  Delete /admin/edit-post/:postId
+exports.deletePost = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const post = await Post.findByIdAndDelete(postId );
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+
+
+//@desc logout 
+exports.logout = async (req, res) => {
+ res.clearCookie('token')
+res.redirect('/admin')
+
+
+}

@@ -3,7 +3,7 @@ const Post = require("../models/Post");
 exports.getAllPosts = async (req, res) => {
   try {
     const locals = {
-      title: "NodeJs Blog ",
+      title: "ِAbood Blog ",
       description: "Simple Blog created with NodeJs , Express & MongoDb",
     };
     //pagination
@@ -26,6 +26,7 @@ exports.getAllPosts = async (req, res) => {
       posts,
       current: page,
       nextPage: hasNextPage ? nextPage : null,
+      currentRoute:'/'
     });
   } catch (err) {
     console.log(err);
@@ -40,7 +41,7 @@ exports.getPost = async (req, res) => {
       title: post.title,
       description: "Simple Blog created with NodeJs , Express & MongoDb",
     };
-    res.render("post", { locals, post });
+    res.render("post", { locals, post ,currentRoute:`post/${slug}`});
   } catch (err) {
     console.log(err);
   }
@@ -67,3 +68,4 @@ exports.searchForPosts = async (req, res) => {
     console.log(err);
   }
 };
+
